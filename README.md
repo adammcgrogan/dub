@@ -83,6 +83,8 @@ go build -o dub .
 curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o yt-dlp
 chmod +x yt-dlp
 # Windows: download yt-dlp.exe from https://github.com/yt-dlp/yt-dlp/releases/latest
+
+./dub
 ```
 
 ---
@@ -92,7 +94,7 @@ chmod +x yt-dlp
 When dub starts, you'll see a text prompt:
 
 ```
-🎧  soundcloud-ripper
+🎧  dub
 ──────────────────────────────────────────────────────────────
 
 Paste a SoundCloud track or playlist URL:
@@ -122,6 +124,7 @@ enter download  · ? help  · esc quit
 - Query strings are automatically stripped from URLs (e.g. `?si=...` added by the SoundCloud app)
 - Tracks that were already downloaded in a previous session are shown as `◎ Cached` and skipped
 - If some tracks in a playlist are unavailable (deleted, geo-blocked, or private), dub skips them and continues with the rest
+- To download your liked songs, use your SoundCloud likes URL. Note that SoundCloud may use a numeric ID in the URL rather than your display name — check the address bar on your profile page, e.g. `https://soundcloud.com/user-158083300/likes`
 
 ---
 
