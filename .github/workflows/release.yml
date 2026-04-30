@@ -1,0 +1,69 @@
+name: Build and Release soundcloud-ripper
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Cross-Compile and Upload
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.1'
+
+      - name: Create Build Directories
+        run: mkdir -p release/mac release/windows release/linux
+
+      - name: Download yt-dlp binaries
+        run: |
+          curl -sL https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_macos -o release/mac/yt-dlp
+          curl -sL https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe -o release/windows/yt-dlp.exe
+          curl -sL https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_linux -o release/linux/yt-dlp
+          curl -sL https://github.com/wef/AtomicParsley/releases/download/20210715.151551.e7ad03a/AtomicParsley.zip -o ap.zip
+          unzip ap.zip -d release/windows/
+          chmod +x release/mac/yt-dlp release/linux/yt-dlp
+
+      - name: Compile Go Code
+        run: |
+          # Mac (Apple Silicon)
+          GOOS=darwin GOARCH=arm64 go build -o release/mac/soundcloud-ripper main.go
+          
+          # Windows
+          GOOS=windows GOARCH=amd64 go build -o release/windows/soundcloud-ripper.exe main.go
+          
+          # Linux
+          GOOS=linux GOARCH=amd64 go build -o release/linux/soundcloud-ripper main.go
+
+      - name: Copy README to packages
+        run: |
+          cp README.md release/mac/
+          cp README.md release/windows/
+          cp README.md release/linux/
+
+      - name: Zip Packages
+        run: |
+          cd release
+          zip -j soundcloud-ripper-Mac.zip mac/*
+          zip -j soundcloud-ripper-Windows.zip windows/*
+          zip -j soundcloud-ripper-Linux.zip linux/*
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release/soundcloud-ripper-Mac.zip
+            release/soundcloud-ripper-Windows.zip
+            release/soundcloud-ripper-Linux.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
